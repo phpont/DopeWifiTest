@@ -10,7 +10,7 @@
             |_|
 ```
 
-A personal project I built for myself: a Wi-Fi/internet speed test with a terminal/ASCII look that I actually like. Made to be easy to run on mobile/desktop in the browser, and also from the terminal with a single command. No auth, no tracking, no data storage.
+A personal project I built for myself: a Wi-Fi/internet speed test with a terminal/ASCII look that I actually like. Made to be easy to run on mobile/desktop in the browser, and also from the terminal with a single command.
 
 v1.0 measures latency and download only. Upload was removed to keep results consistent with the Worker-based backend.
 
