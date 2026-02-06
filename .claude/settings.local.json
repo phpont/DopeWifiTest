@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:blog.cloudflare.com)",
+      "Bash(npm create:*)",
+      "Bash(xcopy /E /Y \"DopeWifiTemp\\\\*\" \"DopeWifiTest\"\" 2>&1 && rmdir /S /Q \"DopeWifiTemp \")",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

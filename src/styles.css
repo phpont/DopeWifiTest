@@ -1,0 +1,256 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --dim: #555;
+  --font: 'Courier New', Courier, 'Lucida Console', monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+pre, code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+pre {
+  white-space: pre;
+  overflow-x: auto;
+}
+
+::selection {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dim);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fg);
+}
+
+/* App container */
+.app {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Logo */
+.ascii-logo {
+  text-align: center;
+  margin: 24px 0 8px 0;
+  font-size: 13px;
+  line-height: 1.15;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Button row */
+.button-row {
+  display: flex;
+  gap: 16px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  font-family: var(--font);
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--fg);
+  padding: 10px 28px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn:active:not(:disabled) {
+  background: var(--dim);
+  color: var(--bg);
+}
+
+/* Phase indicator */
+.phase-label {
+  text-align: center;
+  margin: 8px 0;
+  font-size: 16px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* Meter */
+.meter {
+  white-space: pre;
+  font-size: 14px;
+  text-align: center;
+  margin: 4px 0;
+}
+
+.meter-label {
+  font-size: 12px;
+  color: var(--dim);
+  text-align: center;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.meter-speed {
+  font-size: 32px;
+  text-align: center;
+  letter-spacing: 2px;
+  margin: 4px 0;
+  font-weight: bold;
+}
+
+.meter-unit {
+  font-size: 14px;
+  color: var(--dim);
+  font-weight: normal;
+}
+
+/* Terminal output */
+.terminal-output {
+  width: 100%;
+  max-width: 720px;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--dim);
+  padding: 10px 12px;
+  margin: 12px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ASCII Frame */
+.ascii-frame {
+  white-space: pre;
+  text-align: left;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Result section */
+.result-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Spinner */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Copy toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--fg);
+  color: var(--bg);
+  padding: 8px 24px;
+  font-family: var(--font);
+  font-size: 13px;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.toast.visible {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  html {
+    font-size: 12px;
+  }
+  .ascii-logo {
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  .meter-speed {
+    font-size: 24px;
+  }
+  .app {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 11px;
+  }
+  .ascii-logo {
+    font-size: 5.5px;
+    line-height: 1.05;
+  }
+  .meter-speed {
+    font-size: 20px;
+  }
+  .button-row {
+    gap: 8px;
+  }
+  .btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}

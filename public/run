@@ -1,0 +1,148 @@
+#!/bin/sh
+# DopeWifiTest - Terminal Speed Test
+# Usage: curl -fsSL https://DOMAIN/run | sh
+# Options: --json  (output JSON)
+set -e
+
+BASE="https://dopespeedtest.paulohponta.workers.dev"
+JSON_MODE=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --json) JSON_MODE=1 ;;
+  esac
+done
+
+# --- Logo ---
+print_logo() {
+  cat << 'LOGO'
+ (
+ )\ )                     (  (          (          *   )             )
+(()/(                 (   )\))(   ' (   )\ )  (  ` )  /(   (      ( /(
+ /(_))   (   `  )    ))\ ((_)()\ )  )\ (()/(  )\  ( )(_)) ))\ (   )\())
+(_))_    )\  /(/(   /((_)_(())\_)()((_) /(_))((_)(_(_()) /((_))\ (_))/
+ |   \  ((_)((_)_\ (_))  \ \((_)/ / (_)(_) _| (_)|_   _|(_)) ((_)| |_
+ | |) |/ _ \| '_ \)/ -_)  \ \/\/ /  | | |  _| | |  | |  / -_)(_-<|  _|
+ |___/ \___/| .__/ \___|   \_/\_/   |_| |_|   |_|  |_|  \___|/__/ \__|
+            |_|
+LOGO
+}
+
+# --- Utilities ---
+cachebust() {
+  echo "$(date +%s)$$$(od -A n -t u4 -N 4 /dev/urandom 2>/dev/null | tr -d ' ' || echo $RANDOM)"
+}
+
+sort_nums() {
+  echo "$@" | tr ' ' '\n' | sort -g
+}
+
+median() {
+  local sorted
+  sorted=$(sort_nums "$@")
+  local count
+  count=$(echo "$sorted" | wc -l | tr -d ' ')
+  local mid=$(( (count + 1) / 2 ))
+  echo "$sorted" | sed -n "${mid}p"
+}
+
+mean() {
+  echo "$@" | tr ' ' '\n' | awk '{s+=$1; c++} END {if(c>0) printf "%.2f", s/c; else print "0"}'
+}
+
+to_mbps() {
+  echo "$1" | awk '{printf "%.2f", $1 * 8 / 1000000}'
+}
+
+# --- Ping ---
+measure_ping() {
+  printf "  Testing latency...\n"
+  local pings=""
+  local i=1
+  while [ "$i" -le 10 ]; do
+    local ms
+    ms=$(curl -o /dev/null -s -w '%{time_total}' \
+      "$BASE/ping?cachebust=$(cachebust)")
+    local ms_val
+    ms_val=$(echo "$ms" | awk '{printf "%.1f", $1 * 1000}')
+    pings="$pings $ms_val"
+    printf "    ping %d/10: %s ms\n" "$i" "$ms_val"
+    i=$((i + 1))
+  done
+  PING_MEDIAN=$(median $pings)
+  PING_MEAN=$(mean $pings)
+}
+
+# --- Download ---
+measure_download() {
+  printf "  Testing download...\n"
+  local speeds=""
+  local sizes="5000000 10000000 25000000"
+  local round=1
+  for size in $sizes; do
+    local size_mb
+    size_mb=$(echo "$size" | awk '{printf "%.0f", $1/1000000}')
+    local bps
+    bps=$(curl -o /dev/null -s -w '%{speed_download}' \
+      "$BASE/down?bytes=$size&cachebust=$(cachebust)")
+    local mbps
+    mbps=$(to_mbps "$bps")
+    speeds="$speeds $mbps"
+    printf "    round %d/3 (%s MB): %s Mbps\n" "$round" "$size_mb" "$mbps"
+    round=$((round + 1))
+  done
+  DL_MEDIAN=$(median $speeds)
+  DL_MEAN=$(mean $speeds)
+}
+
+# --- ASCII bar ---
+make_bar() {
+  local value="$1"
+  local max="$2"
+  local width=20
+  local filled
+  filled=$(echo "$value $max $width" | awk '{
+    if ($2 > 0) r = $1 / $2;
+    else r = 0;
+    if (r > 1) r = 1;
+    printf "%d", r * $3
+  }')
+  local empty=$((width - filled))
+  local bar=""
+  local i=0
+  while [ "$i" -lt "$filled" ]; do bar="${bar}#"; i=$((i+1)); done
+  i=0
+  while [ "$i" -lt "$empty" ]; do bar="${bar}."; i=$((i+1)); done
+  echo "$bar"
+}
+
+# --- Main ---
+print_logo
+echo ""
+echo "  DopeWifiTest - CLI Speed Test"
+echo "  =============================="
+echo ""
+
+measure_ping
+echo ""
+measure_download
+echo ""
+
+if [ "$JSON_MODE" -eq 1 ]; then
+  printf '{"ping":{"median":%s,"mean":%s},"download":{"median":%s,"mean":%s}}\n' \
+    "$PING_MEDIAN" "$PING_MEAN" "$DL_MEDIAN" "$DL_MEAN"
+else
+  DL_BAR=$(make_bar "$DL_MEDIAN" "$DL_MEDIAN")
+
+  echo "  +------------------------------------------------------+"
+  echo "  |                    DopeWifiTest                       |"
+  echo "  +------------------------------------------------------+"
+  printf "  |  DL   %s  %8s Mbps  (median)     |\n" "$DL_BAR" "$DL_MEDIAN"
+  printf "  |  PING                      %8s ms   (median)     |\n" "$PING_MEDIAN"
+  echo "  |                                                      |"
+  printf "  |  DL   mean: %8s Mbps                            |\n" "$DL_MEAN"
+  printf "  |  PING mean: %8s ms                              |\n" "$PING_MEAN"
+  echo "  +------------------------------------------------------+"
+  echo ""
+  echo "  Note: Measures client <-> Cloudflare edge, not ISP speed."
+fi
